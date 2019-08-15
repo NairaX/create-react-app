@@ -104,7 +104,17 @@ module.exports = function(
     test: 'react-scripts test',
     eject: 'react-scripts eject',
     format: 'prettier --write "./**/*.{js,jsx,ts,tsx,json}"',
+    'format:check': './ci/scripts/prettier-check.sh',
+    stylelint: "stylelint 'src/**/*.{tsx,ts,js,jsx}'",
+    'test:ci': 'CI=true npm-run-all stylelint format:check test',
   };
+
+  if (useTypeScript) {
+    appPackage.scripts['test:ci'] =
+      'CI=true npm-run-all tslint stylelint format:check test';
+    appPackage.scripts.tslint = 'tslint --project tsconfig.json';
+    appPackage.scripts['tslint:fix'] = 'tslint --project tsconfig.json --fix';
+  }
 
   // Setup the eslint config
   appPackage.eslintConfig = {
@@ -253,7 +263,17 @@ module.exports = function(
       verbose && '--verbose',
     ].filter(e => e);
   }
-  devDependenciesArgs.push('husky', 'prettier', 'lint-staged');
+  devDependenciesArgs.push(
+    'husky',
+    'prettier',
+    'lint-staged',
+    'stylelint',
+    'stylelint-config-recommended',
+    'stylelint-config-styled-components',
+    'stylelint-processor-styled-components',
+    'tslint-config-prettier',
+    'npm-run-all'
+  );
 
   // we need to cd to the new app to install husky for the pre-commit hook
   const procCdAppPath = spawn.sync(`cd`, [appPath], {
